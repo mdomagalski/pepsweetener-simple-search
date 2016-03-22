@@ -16,6 +16,7 @@
     "polymer": "Polymer/polymer#^1.0.0",
     "iron-ajax": "PolymerElements/iron-ajax#^1.2.0",
     "glycopeptide-multiresult": "https://mdomagalski@bitbucket.org/mdomagalski/glycopeptide-multiresult.git",
+    "glycopeptide-xml-exporter": "https://mdomagalski@bitbucket.org/mdomagalski/glycopeptide-xml-exporter.git",
     "iron-form": "PolymerElements/iron-form#^1.0.16",
     "paper-button": "PolymerElements/paper-button#^1.0.11",
     "paper-toolbar": "PolymerElements/paper-toolbar#^1.1.4",
