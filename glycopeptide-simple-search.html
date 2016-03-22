@@ -1,0 +1,170 @@
+<!-- Imports polymer -->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-ajax/iron-ajax.html">
+<link rel="import" href="../iron-form/iron-form.html">
+<link rel="import" href="../paper-header-panel/paper-header-panel.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-input/paper-textarea.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../glycopeptide-multiresult/glycopeptide-multiresult.html">
+
+<!-- Defines element markup -->
+<dom-module id="glycopeptide-simple-search">
+    <style is="simple-search-style">
+        :root {
+            height: 100%;
+
+            --paper-input-container-input: {
+                border: solid #f7f7f9 .2rem;
+                border-radius: 3px;
+                font-size: 18px;
+                line-height: 32px;
+
+            };
+
+            --paper-input-container-label:{
+                padding-bottom: 10px;
+                padding-left: 5px;
+                font-size: 18px;
+                line-height: 32px;
+            };
+
+            /* Label and underline color when the input is focused */
+            --paper-input-container-focus-color: blue;
+
+            /* Label and underline color when the input is invalid */
+            --paper-input-container-invalid-color: red;
+
+            /* Input foreground color */
+            --paper-input-container-input-color: black;
+        }
+        paper-header-panel {
+            height: 240px;
+            margin: 12px;
+            @apply(--shadow-elevation-2dp);
+            --paper-header-panel-shadow: {
+                height: 6px;
+                bottom: -6px;
+                box-shadow: inset 0px 5px 6px -3px rgba(0, 0, 0, 0.4);
+            };
+            --paper-header-panel-standard-container: {
+                border: 1px solid gray;
+            };
+        }
+        paper-input {
+            display: inline-block;
+            margin: 20px 10px 30px 40px;
+        }
+        paper-button.indigo {
+            font-family: "Roboto";
+            background-color: var(--paper-indigo-500);
+            color: white;
+            --paper-button-raised-keyboard-focus: {
+                background-color: var(--paper-indigo-a300) !important;
+                color: white !important;
+            };
+        }
+        .paper-header {
+            font-family: "Roboto";
+            height: 60px;
+            font-size: 20px;
+            line-height: 60px;
+            padding: 0 10px;
+            color: white;
+            transition: height 0.2s;
+        }
+        .blue .paper-header {
+            background-color: var(--paper-indigo-500);
+        }
+        .short {
+            min-width: 4em;
+        }
+        .long {
+            width: 60%;
+        }
+    </style>
+    <template>
+        <iron-ajax
+            id="ajax"
+            method="POST"
+            url="{{url}}"
+            handle-as="json"
+            on-response="handleResponse"
+            debounce-duration="300">
+        </iron-ajax>
+        <paper-header-panel class="blue" mode="waterfall" at-top>
+            <div class="paper-header">Search human tryptic proteome + UniCarb-DB N-glycopeptide dataset</div>
+                <form is="iron-form" id="simpleSearchForm" class="form-inline">
+                    <paper-input name="masses" label="List of hypothetical N-glycopeptide masses (Da)" value="{{masses}}" class="long"></paper-input>
+                    <paper-input name="ppm" label="tolerance (ppm)" value="{{ppm}}" class="short"></paper-input>
+                    <paper-button raised class="indigo" on-click="search">search</paper-button>
+                </form>
+            </div>
+        </paper-header-panel>
+        <glycopeptide-multiresult id="results"></glycopeptide-multiresult>
+    </template>
+
+    <!-- Registers custom element -->
+    <script>
+    Polymer({
+        is: 'glycopeptide-simple-search',
+        properties: {
+            url: {
+                type: String,
+                value: "http://localhost:8080/search"
+            },
+            masses: String,
+            ppm: {
+                type: Number,
+                value: 10
+            },
+            errorMessage: {
+                type: String,
+                value: "Please check your query"
+            }
+        },
+        search: function(){
+            var queryList = this.masses.split(",").filter(Number);
+            for(var i=0; i<queryList.length; i++){queryList[i] = queryList[i].trim()};
+
+            var nonRedundantQueryList = queryList.filter(function(item, pos) {
+                return queryList.indexOf(item) == Math.abs(pos);
+            });
+            var multiResultElement = Polymer.dom(this.root).querySelector('#results');
+            multiResultElement.masses = nonRedundantQueryList;
+
+            this.ppm = Math.abs(this.ppm);
+
+            var Util = {
+                getQueryString: function (params) {
+                    var queryParts = [];
+                    var param;
+                    var value;
+
+                    for (param in params) {
+                        value = params[param];
+                        param = window.encodeURIComponent(param);
+
+                        if (value !== null) {
+                            param += '=' + window.encodeURIComponent(value);
+                        }
+
+                        queryParts.push(param);
+                    }
+
+                    return queryParts.join('&');
+                }
+            };
+            for(mass of nonRedundantQueryList){
+                this.$.ajax.body = Util.getQueryString({'mass': mass, 'ppm': this.ppm});
+                this.$.ajax.generateRequest();
+            }
+        },
+        handleResponse: function(request) {
+            response = request.detail.response;
+            var multiResultElement = Polymer.dom(this.root).querySelector('#results');
+            multiResultElement.newDataset(response);
+        }
+    });
+    </script>
+</dom-module>

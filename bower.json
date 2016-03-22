@@ -1,9 +1,9 @@
 {
-  "name": "glycopeptide-simplesearch",
+  "name": "glycopeptide-simple-search",
   "version": "0.0.0",
   "description": "Simple search of glycopeptide matrix",
   "license": "MIT",
-  "main": "glycopeptide-simplesearch.html",
+  "main": "glycopeptide-simple-search.html",
   "keywords": [
     "polymer",
     "web-components"
@@ -21,6 +21,7 @@
     "paper-toolbar": "PolymerElements/paper-toolbar#^1.1.4",
     "paper-header-panel": "PolymerElements/paper-header-panel#^1.1.4",
     "paper-spinner": "PolymerElements/paper-spinner#^1.1.1",
-    "paper-fab": "PolymerElements/paper-fab#^1.2.0"
+    "paper-fab": "PolymerElements/paper-fab#^1.2.0",
+    "paper-card": "PolymerElements/paper-card#^1.1.1"
   }
 }
