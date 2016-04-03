@@ -15,8 +15,7 @@
   "dependencies": {
     "polymer": "Polymer/polymer#^1.0.0",
     "iron-ajax": "PolymerElements/iron-ajax#^1.2.0",
-    "glycopeptide-multiresult": "https://mdomagalski@bitbucket.org/sib-pig/glycopeptide-multi-result.git",
-    "glycopeptide-xml-exporter": "https://mdomagalski@bitbucket.org/sib-pig/glycopeptide-xml-exporter.git",
+    "glycopeptide-multi-result": "https://mdomagalski@bitbucket.org/sib-pig/glycopeptide-multi-result.git",
     "iron-form": "PolymerElements/iron-form#^1.0.16",
     "paper-button": "PolymerElements/paper-button#^1.0.11",
     "paper-toolbar": "PolymerElements/paper-toolbar#^1.1.4",

@@ -63,7 +63,7 @@ In order to run it locally you'll need to fetch some dependencies and a basic se
 
 ## History
 
-For detailed changelog, check [Releases](https://github.com/mdomagalski/glycopeptide-simple-search/releases).
+For detailed changelog, check [Releases](https://bitbucket.org/pig-sib/glycopeptide-simple-search/releases).
 
 ## License
 

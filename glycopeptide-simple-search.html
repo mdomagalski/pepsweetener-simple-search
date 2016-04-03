@@ -6,8 +6,7 @@
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-input/paper-textarea.html">
 <link rel="import" href="../paper-button/paper-button.html">
-<link rel="import" href="../glycopeptide-multi-result/glycopeptide-multiresult.html">
-<link rel="import" href="../glycopeptide-xml-exporter/glycopeptide-xml-exporter.html">
+<link rel="import" href="../glycopeptide-multi-result/glycopeptide-multi-result.html">
 
 <!-- Defines element markup -->
 <dom-module id="glycopeptide-simple-search">
@@ -94,7 +93,7 @@
             debounce-duration="300">
         </iron-ajax>
         <paper-header-panel class="blue" mode="waterfall" at-top>
-            <div class="paper-header">Search human tryptic N-glycosite containing peptides + UniCarb-DB N-glycopeptide dataset</div>
+            <div class="paper-header">Search dataset created by combination of human proteome N-glycosite containing tryptic peptides and UniCarb-DB glycans</div>
                 <form is="iron-form" id="simpleSearchForm" class="form-inline">
                     <paper-input name="masses" label="List of hypothetical N-glycopeptide masses (Da)" value="{{masses}}" class="long"></paper-input>
                     <paper-input name="ppm" label="tolerance (ppm)" value="{{ppm}}" class="short"></paper-input>
@@ -102,7 +101,7 @@
                 </form>
             </div>
         </paper-header-panel>
-        <glycopeptide-multiresult id="results"></glycopeptide-multiresult>
+        <glycopeptide-multi-result id="results"></glycopeptide-multi-result>
     </template>
 
     <!-- Registers custom element -->
@@ -133,6 +132,7 @@
             });
             var multiResultElement = Polymer.dom(this.root).querySelector('#results');
             multiResultElement.masses = nonRedundantQueryList;
+            multiResultElement.datasets = {};
 
             this.ppm = Math.abs(this.ppm);
 
@@ -160,15 +160,10 @@
                 this.$.ajax.body = Util.getQueryString({'mass': mass, 'ppm': this.ppm});
                 this.$.ajax.generateRequest();
             }
-            var xml = document.createElement('glycopeptide-xml-exporter');
-            xml.setAttribute("filename", "results.xml");
-            xml.setAttribute("json", this.$.results.data);
-            this.$.results.appendChild(xml);
         },
         handleResponse: function(request) {
             response = request.detail.response;
-            var multiResultElement = Polymer.dom(this.root).querySelector('#results');
-            multiResultElement.newDataset(response);
+            this.$.results.newDataset(response);
         }
     });
     </script>
