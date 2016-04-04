@@ -40,7 +40,8 @@
         }
         paper-header-panel {
             height: 240px;
-            margin: 12px;
+            margin-left: 48px;
+            margin-right: 60px;
             @apply(--shadow-elevation-2dp);
             --paper-header-panel-shadow: {
                 height: 6px;
@@ -92,7 +93,7 @@
             on-response="handleResponse"
             debounce-duration="300">
         </iron-ajax>
-        <paper-header-panel class="blue" mode="waterfall" at-top>
+        <paper-header-panel class="blue" mode="standard">
             <div class="paper-header">Search dataset created by combination of human proteome N-glycosite containing tryptic peptides and UniCarb-DB glycans</div>
                 <form is="iron-form" id="simpleSearchForm" class="form-inline">
                     <paper-input name="masses" label="List of hypothetical N-glycopeptide masses (Da)" value="{{masses}}" class="long"></paper-input>
