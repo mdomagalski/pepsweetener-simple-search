@@ -95,77 +95,77 @@
         </iron-ajax>
         <paper-header-panel class="blue" mode="standard">
             <div class="paper-header">Search dataset created by combination of human proteome N-glycosite containing tryptic peptides and UniCarb-DB glycans</div>
-                <form is="iron-form" id="simpleSearchForm" class="form-inline">
-                    <paper-input name="masses" label="List of hypothetical N-glycopeptide masses (Da)" value="{{masses}}" class="long"></paper-input>
-                    <paper-input name="ppm" label="tolerance (ppm)" value="{{ppm}}" class="short"></paper-input>
-                    <paper-button raised class="indigo" on-click="search">search</paper-button>
-                </form>
+            <form is="iron-form" id="simpleSearchForm" class="form-inline">
+                <paper-input name="masses" label="List of hypothetical N-glycopeptide masses (Da)" value="{{masses}}" class="long"></paper-input>
+                <paper-input name="ppm" label="tolerance (ppm)" value="{{ppm}}" class="short"></paper-input>
+                <paper-button raised class="indigo" on-click="search">search</paper-button>
+            </form>
             </div>
         </paper-header-panel>
-        <glycopeptide-multi-result id="results"></glycopeptide-multi-result>
+        <glycopeptide-multi-result id="sResults"></glycopeptide-multi-result>
     </template>
 
     <!-- Registers custom element -->
     <script>
-    Polymer({
-        is: 'glycopeptide-simple-search',
-        properties: {
-            url: {
-                type: String,
-                value: "http://localhost:8080/search"
+        Polymer({
+            is: 'glycopeptide-simple-search',
+            properties: {
+                url: {
+                    type: String,
+                    value: "http://localhost:8080/search"
+                },
+                masses: String,
+                ppm: {
+                    type: Number,
+                    value: 10
+                },
+                errorMessage: {
+                    type: String,
+                    value: "Please check your query"
+                }
             },
-            masses: String,
-            ppm: {
-                type: Number,
-                value: 10
-            },
-            errorMessage: {
-                type: String,
-                value: "Please check your query"
-            }
-        },
-        search: function(){
-            var queryList = this.masses.split(",").filter(Number);
-            for(var i=0; i<queryList.length; i++){queryList[i] = queryList[i].trim()};
+            search: function(){
+                var queryList = this.masses.split(",").filter(Number);
+                for(var i=0; i<queryList.length; i++){queryList[i] = queryList[i].trim()};
 
-            var nonRedundantQueryList = queryList.filter(function(item, pos) {
-                return queryList.indexOf(item) == Math.abs(pos);
-            });
-            var multiResultElement = Polymer.dom(this.root).querySelector('#results');
-            multiResultElement.masses = nonRedundantQueryList;
-            multiResultElement.datasets = {};
+                var nonRedundantQueryList = queryList.filter(function(item, pos) {
+                    return queryList.indexOf(item) == Math.abs(pos);
+                });
+                var multiResultElement = Polymer.dom(this.root).querySelector('#sResults');
+                multiResultElement.masses = nonRedundantQueryList;
+                multiResultElement.datasets = {};
 
-            this.ppm = Math.abs(this.ppm);
+                this.ppm = Math.abs(this.ppm);
 
-            var Util = {
-                getQueryString: function (params) {
-                    var queryParts = [];
-                    var param;
-                    var value;
+                var Util = {
+                    getQueryString: function (params) {
+                        var queryParts = [];
+                        var param;
+                        var value;
 
-                    for (param in params) {
-                        value = params[param];
-                        param = window.encodeURIComponent(param);
+                        for (param in params) {
+                            value = params[param];
+                            param = window.encodeURIComponent(param);
 
-                        if (value !== null) {
-                            param += '=' + window.encodeURIComponent(value);
+                            if (value !== null) {
+                                param += '=' + window.encodeURIComponent(value);
+                            }
+
+                            queryParts.push(param);
                         }
 
-                        queryParts.push(param);
+                        return queryParts.join('&');
                     }
-
-                    return queryParts.join('&');
+                };
+                for(mass of nonRedundantQueryList){
+                    this.$.ajax.body = Util.getQueryString({'mass': mass, 'ppm': this.ppm});
+                    this.$.ajax.generateRequest();
                 }
-            };
-            for(mass of nonRedundantQueryList){
-                this.$.ajax.body = Util.getQueryString({'mass': mass, 'ppm': this.ppm});
-                this.$.ajax.generateRequest();
+            },
+            handleResponse: function(request) {
+                response = request.detail.response;
+                this.$.sResults.newDataset(response);
             }
-        },
-        handleResponse: function(request) {
-            response = request.detail.response;
-            this.$.results.newDataset(response);
-        }
-    });
+        });
     </script>
 </dom-module>
