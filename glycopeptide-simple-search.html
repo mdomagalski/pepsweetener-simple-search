@@ -216,7 +216,7 @@
             properties: {
                 url: {
                     type: String,
-                    value: "http://localhost:8080/search"
+                    value: "http://129.194.71.205:9000/search"
                 },
                 masses: String,
                 ppm: {
@@ -278,7 +278,7 @@
                     }
                 };
                 for(mass of nonRedundantQueryList){
-                    this.$.ajax.body = Util.getQueryString({'mass': mass, 'ppm': this.ppm});
+                    this.$.ajax.body = Util.getQueryString({'mass': mass, 'ppm': this.ppm, 'range': JSON.stringify(this._rangeObjectCreator())});
                     this.$.ajax.generateRequest();
                 }
             },
