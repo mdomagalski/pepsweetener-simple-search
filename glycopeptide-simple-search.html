@@ -7,10 +7,15 @@
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-input/paper-textarea.html">
 <link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="../paper-slider/paper-slider.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
+
 <link rel="import" href="../glycopeptide-multi-result/glycopeptide-multi-result.html">
 
 <!-- Defines element markup -->
 <dom-module id="glycopeptide-simple-search">
+    <style is="custom-style" include="iron-flex iron-flex-alignment"></style>
     <style is="simple-search-style">
         :root {
             height: 100%;
@@ -40,7 +45,6 @@
             --paper-input-container-input-color: black;
         }
         paper-header-panel {
-            height: 240px;
             margin-left: 36px;
             margin-right: 48px;
             @apply(--shadow-elevation-2dp);
@@ -55,7 +59,7 @@
         }
         paper-input {
             display: inline-block;
-            margin: 20px 10px 30px 40px;
+            margin: 20px 30px 30px 40px;
         }
         paper-button.indigo {
             font-family: "Roboto";
@@ -84,6 +88,35 @@
         .long {
             width: 60%;
         }
+        .toggle-span-label {
+            position: relative;
+            display: inline-block;
+            vertical-align: middle;
+            padding-left:  8px;
+            padding-top: 2px;
+            pointer-events: none;
+            font-family: 'Roboto', 'Noto', sans-serif;
+            min-width: 140px;
+        }
+        .singleRangeBox{
+            margin: 20px 50px 20px 50px;
+
+        }
+
+        .boxTitle {
+            font-family: 'Roboto', 'Noto', sans-serif;
+            margin-left: 40px;
+            font-size: larger;
+        }
+
+        #rangeBox{
+            margin-left: 20px;
+            margin-right: 20px;
+        }
+
+        .buttonPadding{
+            padding-top: 47px;
+        }
     </style>
     <template>
         <iron-ajax
@@ -97,13 +130,82 @@
         <iron-a11y-keys id="a11y" target="[[_form]]" keys="enter" on-keys-pressed="search"></iron-a11y-keys>
         <paper-header-panel class="blue" mode="standard">
             <div class="paper-header">Search dataset created by combination of human proteome N-glycosite containing tryptic peptides and UniCarb-DB glycans</div>
-            <form is="iron-form" id="simpleSearchForm" class="form-inline">
+        </paper-header-panel>
+
+        <form is="iron-form" id="simpleSearchForm" class="form-inline">
+            <div class="horizontal center-justified layout">
                 <paper-input name="masses" label="List of hypothetical N-glycopeptide masses (Da)" value="{{masses}}" class="long"></paper-input>
                 <paper-input name="ppm" label="tolerance (ppm)" value="{{ppm}}" class="short"></paper-input>
-                <paper-button raised class="indigo" on-click="search">search</paper-button>
-            </form>
+                <div class="buttonPadding"><paper-button raised class="indigo" on-click="search">search</paper-button></div>
+
             </div>
-        </paper-header-panel>
+            </form>
+        <h3 class="boxTitle">Glycan Filter</h3>
+        <div id="rangeBox" class="layout horizontal wrap justified">
+            <div class="singleRangeBox ">
+                <div class="layout horizontal">
+                    <paper-toggle-button id="HexToggle" checked on-change="_disableSlider">Hex : </paper-toggle-button>
+                    <span id="HexLabel" class="toggle-span-label">More or equal to 0</span>
+                </div><br>
+                <paper-slider id="HexRange" pin snaps max="10" max-markers="10" step="1" value="0" on-change="_changeToggleLabel"></paper-slider>
+            </div>
+            <div class="singleRangeBox">
+                <div class="layout horizontal">
+                    <paper-toggle-button id="HexNAcToggle" checked on-change="_disableSlider">HexNAc : </paper-toggle-button>
+                    <span id="HexNAcLabel" class="toggle-span-label">More or equal to 0</span>
+                </div><br>
+                <paper-slider id="HexNAcRange" pin snaps max="10" max-markers="10" step="1" value="0" on-change="_changeToggleLabel"></paper-slider>
+            </div>
+            <div class="singleRangeBox">
+                <div class="layout horizontal">
+                    <paper-toggle-button id="dHexToggle" checked on-change="_disableSlider">Deoxyhexose : </paper-toggle-button>
+                    <span id="dHexLabel" class="toggle-span-label">More or equal to 0</span>
+                </div><br>
+                <paper-slider id="dHexRange" pin snaps max="10" max-markers="10" step="1" value="0" on-change="_changeToggleLabel"></paper-slider>
+            </div>
+            <div class="singleRangeBox">
+                <div class="layout horizontal">
+                    <paper-toggle-button id="NeuAcToggle" checked on-change="_disableSlider">NeuAc : </paper-toggle-button>
+                    <span id="NeuAcLabel" class="toggle-span-label">More or equal to 0</span>
+                </div><br>
+                <paper-slider id="NeuAcRange" pin snaps max="10" max-markers="10" step="1" value="0" on-change="_changeToggleLabel"></paper-slider>
+            </div>
+            <div class="singleRangeBox">
+                <div class="layout horizontal">
+                    <paper-toggle-button id="NeuGcToggle" checked on-change="_disableSlider">NeuGc : </paper-toggle-button>
+                    <span id="NeuGcLabel" class="toggle-span-label">More or equal to 0</span>
+                </div><br>
+                <paper-slider id="NeuGcRange" pin snaps max="10" max-markers="10" step="1" value="0" on-change="_changeToggleLabel"></paper-slider>
+            </div>
+            <div class="singleRangeBox">
+                <div class="layout horizontal">
+                    <paper-toggle-button id="KdnToggle" checked on-change="_disableSlider">KDN : </paper-toggle-button>
+                    <span id="KdnLabel" class="toggle-span-label">More or equal to 0</span>
+                </div><br>
+                <paper-slider id="KdnRange" pin snaps max="10" max-markers="10" step="1" value="0" on-change="_changeToggleLabel"></paper-slider>
+            </div>
+            <div class="singleRangeBox">
+                <div class="layout horizontal">
+                    <paper-toggle-button id="PenToggle" checked on-change="_disableSlider">Pentose : </paper-toggle-button>
+                    <span id="PenLabel" class="toggle-span-label">More or equal to 0</span>
+                </div><br>
+                <paper-slider id="PenRange" pin snaps max="10" max-markers="10" step="1" value="0" on-change="_changeToggleLabel"></paper-slider>
+            </div>
+            <div class="singleRangeBox">
+                <div class="layout horizontal">
+                    <paper-toggle-button id="HexAToggle" checked on-change="_disableSlider">HexA : </paper-toggle-button>
+                    <span id="HexALabel" class="toggle-span-label">More or equal to 0</span>
+                </div><br>
+                <paper-slider id="HexARange" pin snaps max="10" max-markers="10" step="1" value="0" on-change="_changeToggleLabel"></paper-slider>
+            </div>
+            <div class="singleRangeBox">
+                <div class="layout horizontal">
+                    <paper-toggle-button id="SToggle" checked on-change="_disableSlider">Sulphate : </paper-toggle-button>
+                    <span id="SLabel" class="toggle-span-label">More or equal to 0</span>
+                </div><br>
+                <paper-slider id="SRange" pin snaps max="10" max-markers="10" step="1" value="0" on-change="_changeToggleLabel"></paper-slider>
+            </div>
+        </div>
         <glycopeptide-multi-result id="sResults"></glycopeptide-multi-result>
     </template>
 
@@ -183,6 +285,34 @@
             handleResponse: function(request) {
                 response = request.detail.response;
                 this.$.sResults.newDataset(response);
+            },
+
+            _disableSlider : function (event) {
+                var monosaccharide  = event.target.id.replace("Toggle","");
+                if(event.target.checked){
+                    this.$$("#"+monosaccharide+"Range").disabled  = false;
+                    this.$$("#"+monosaccharide+"Label").textContent  = "More or equal to "+ this.$$("#"+monosaccharide+"Range").value;
+                } else{
+                    this.$$("#"+monosaccharide+"Range").disabled  = true;
+                    this.$$("#"+monosaccharide+"Label").textContent  = "Not present";
+                }
+            },
+
+            _changeToggleLabel: function (event) {
+                var monosaccharide  = event.target.id.replace("Range","");
+                this.$$("#"+monosaccharide+"Label").textContent  = "More or equal to "+event.target.value;
+            },
+            _rangeObjectCreator: function () {
+                var paperInputs = Array.prototype.slice.call(document.getElementById('rangeBox').getElementsByTagName('paper-slider'));
+                var ranges = {};
+                paperInputs.forEach(function (item) {
+                    var rangeObject = {};
+                    var monosaccharideId = item.id.replace("Range","");
+                    rangeObject["minRange"] = item.value;
+                    rangeObject["presence"] = Polymer.dom(document.getElementById('rangeBox')).querySelector("#"+monosaccharideId+"Toggle").checked;
+                    ranges[monosaccharideId] = rangeObject;
+                });
+                return ranges;
             }
         });
     </script>
