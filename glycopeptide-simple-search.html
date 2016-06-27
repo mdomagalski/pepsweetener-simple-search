@@ -158,9 +158,9 @@
                 <paper-input id="masses" name="masses" label="List of hypothetical N-glycopeptide masses (Da)" value="{{masses}}" class="long"></paper-input>
                 <paper-input name="tolerance" label="tolerance" value="{{toleranceValue}}" class="short"></paper-input>
                 <paper-dropdown-menu>
-                    <paper-listbox class="dropdown-content" value="{{toleranceUnit}}" selected="0">
-                        <paper-item>ppm</paper-item>
-                        <paper-item>Da</paper-item>
+                    <paper-listbox class="dropdown-content" attr-for-selected="value" selected="{{toleranceUnit}}">
+                        <paper-item value="ppm">ppm</paper-item>
+                        <paper-item value="Da">Da</paper-item>
                     </paper-listbox>
                 </paper-dropdown-menu>
                 <div class="buttonPadding"><paper-button raised class="indigo" on-click="search">search</paper-button></div>
@@ -248,7 +248,10 @@
                     value: "http://129.194.71.205:9000/search"
                 },
                 masses: String,
-                toleranceUnit: String,
+                toleranceUnit: {
+                    type: String,
+                    value: "ppm"
+                },
                 toleranceValue: {
                     type: Number,
                     value: 10
