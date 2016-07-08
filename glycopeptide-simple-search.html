@@ -2,6 +2,7 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../iron-ajax/iron-ajax.html">
 <link rel="import" href="../iron-form/iron-form.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../iron-a11y-keys/iron-a11y-keys.html">
 <link rel="import" href="../iron-collapse/iron-collapse.html">
 <link rel="import" href="../paper-header-panel/paper-header-panel.html">
@@ -52,20 +53,24 @@
             /* Input foreground color */
             --paper-input-container-input-color: black;
         }
+
         paper-header-panel {
             margin-left: 36px;
             margin-right: 36px;
             min-width: 422px;
         }
+
         paper-input {
             display: inline-block;
             margin: 20px 30px 30px 0px;
         }
+
         paper-dropdown-menu {
             display: inline-block;
             width: 60px;
             margin: 28px 30px 30px 5px;
         }
+
         paper-button.indigo {
             font-family: "Roboto";
             background-color: var(--paper-indigo-500);
@@ -75,6 +80,11 @@
                 color: white !important;
             };
         }
+
+        iron-icon[disabled]{
+            display: none;
+        }
+
         .paper-header {
             font-family: "Roboto";
             height: 60px;
@@ -154,16 +164,11 @@
         }
 
         #rangeBox {
-            padding: 20px;
+            padding: 30px 20px 20px 20px;
         }
 
         #masses{
             min-width: 200px;
-        }
-
-        #rangeBox{
-            margin-left: 50px;
-            margin-right: 10px;
         }
 
         .buttonPadding{
@@ -208,7 +213,11 @@
                 <div class="buttonPadding"><paper-button raised class="indigo" on-click="search">search</paper-button></div>
             </div>
             <paper-header-panel id="glycanFilterPanel" class="blue" mode="standard">
-                <div id="glycanFilterHeader" class="paper-header" on-click="_toggleGlycanFilter">Filter by glycan composition</div>
+                <div id="glycanFilterHeader" class="paper-header" on-click="_toggleGlycanFilter">
+                    Filter by glycan composition
+                    <iron-icon id="expandIcon" icon="icons:unfold-more"></iron-icon>
+                    <iron-icon id="foldIcon" icon="icons:unfold-less" disabled></iron-icon>
+                </div>
             </paper-header-panel>
             <iron-collapse id="glycanFilterBox" class="horizontal center-justified">
                 <div id="rangeBox" class="layout horizontal wrap">
@@ -378,6 +387,14 @@
             },
             _toggleGlycanFilter: function() {
                 this.$.glycanFilterBox.toggle();
+                if(this.$.foldIcon.hasAttribute('disabled')){
+                    this.$.expandIcon.setAttribute('disabled', 'true');
+                    this.$.foldIcon.removeAttribute('disabled');
+                }else{
+                    this.$.foldIcon.setAttribute('disabled', 'true');
+                    this.$.expandIcon.removeAttribute('disabled');
+                }
+
             },
             _searchAndChangeToggleLabel: function (event) {
                 this.search();
