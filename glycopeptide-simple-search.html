@@ -2,6 +2,7 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../iron-ajax/iron-ajax.html">
 <link rel="import" href="../iron-form/iron-form.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../iron-a11y-keys/iron-a11y-keys.html">
 <link rel="import" href="../iron-collapse/iron-collapse.html">
@@ -15,6 +16,7 @@
 <link rel="import" href="../paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="../paper-slider/paper-slider.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../app-storage/app-localstorage/app-localstorage-document.html">
 
 <link rel="import" href="../glycopeptide-multi-result/glycopeptide-multi-result.html">
 
@@ -204,13 +206,15 @@
                              required auto-validate
                              error-message="Numeric values only!" class="short">
                 </paper-input>
+                <app-localstorage-document id="storage" key="toleranceValue" data="{{toleranceValue}}">
+                </app-localstorage-document>
                 <paper-dropdown-menu>
                     <paper-listbox class="dropdown-content" attr-for-selected="value" selected="{{toleranceUnit}}">
                         <paper-item value="ppm">ppm</paper-item>
                         <paper-item value="Da">Da</paper-item>
                     </paper-listbox>
                 </paper-dropdown-menu>
-                <div class="buttonPadding"><paper-button raised class="indigo" on-click="search">search</paper-button></div>
+                <div class="buttonPadding"><paper-button raised class="indigo" on-click="search"><iron-icon icon="search"></iron-icon>search</paper-button></div>
             </div>
             <paper-header-panel id="glycanFilterPanel" class="blue" mode="standard">
                 <div id="glycanFilterHeader" class="paper-header" on-click="_toggleGlycanFilter">
@@ -224,6 +228,8 @@
                     <div class="singleRangeBox ">
                         <div class="layout horizontal">
                             <paper-toggle-button id="HexToggle" checked on-change="_searchAndDisableSlider">Hex : </paper-toggle-button>
+                            <app-localstorage-document key="hexToggle" data="{{hexToggle}}">
+                            </app-localstorage-document>
                             <span id="HexLabel" class="toggle-span-label">More or equal to 0</span>
                         </div><br>
                         <paper-slider id="HexRange" pin snaps max="10" max-markers="10" step="1" value="0" on-change="_searchAndChangeToggleLabel"></paper-slider>
@@ -365,6 +371,7 @@
                         }
                     };
                     for(mass of nonRedundantQueryList){
+                        console.log(JSON.stringify(this._rangeObjectCreator()));
                         this.$.ajax.body = Util.getQueryString({'mass': mass, 'toleranceUnit': this.toleranceUnit, 'toleranceValue': this.toleranceValue, 'range': JSON.stringify(this._rangeObjectCreator())});
                         this.$.ajax.generateRequest();
                     }
