@@ -4,6 +4,8 @@
 <link rel="import" href="../iron-form/iron-form.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../iron-localstorage/iron-localstorage.html">
 <link rel="import" href="../iron-a11y-keys/iron-a11y-keys.html">
 <link rel="import" href="../iron-collapse/iron-collapse.html">
 <link rel="import" href="../paper-header-panel/paper-header-panel.html">
@@ -15,8 +17,7 @@
 <link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="../paper-slider/paper-slider.html">
-<link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
-<link rel="import" href="../app-storage/app-localstorage/app-localstorage-document.html">
+<link rel="import" href="../pepsweetener-glycan-filter/pepsweetener-glycan-filter.html">
 
 <link rel="import" href="../glycopeptide-multi-result/glycopeptide-multi-result.html">
 
@@ -119,10 +120,6 @@
             font-family: 'Roboto', 'Noto', sans-serif;
             min-width: 140px;
         }
-        .singleRangeBox{
-            width: 300px;
-            margin: 10px 20px 10px 20px;
-        }
 
         .boxTitle {
             font-family: 'Roboto', 'Noto', sans-serif;
@@ -139,34 +136,6 @@
             border-radius: 0 0 5px 5px;
             border: 1px solid rgba(0, 0, 0, 0.2);
             box-shadow: 5px 5px 6px -1px rgba(0, 0, 0, 0.4);
-        }
-
-        #glycanFilterPanel {
-            margin-top: 20px;
-        }
-
-        #glycanFilterHeader {
-            height: 40px;
-            font-size: 18px;
-            font-weight: 600;
-            line-height: 40px;
-            border-bottom: none;
-            color: black;
-            background-color: whitesmoke;
-        }
-
-        #glycanFilterBox{
-            border: 1px solid black;
-            margin-left: 36px;
-            margin-right: 36px;
-            min-width: 758px;
-            border-radius: 0 0 5px 5px;
-            border: 1px solid rgba(0, 0, 0, 0.2);
-            box-shadow: 5px 5px 6px -1px rgba(0, 0, 0, 0.4);
-        }
-
-        #rangeBox {
-            padding: 30px 20px 20px 20px;
         }
 
         #masses{
@@ -206,94 +175,22 @@
                              required auto-validate
                              error-message="Numeric values only!" class="short">
                 </paper-input>
-                <app-localstorage-document id="storage" key="toleranceValue" data="{{toleranceValue}}">
-                </app-localstorage-document>
+                <iron-localstorage name="toleranceValueCache" value="{{toleranceValue}}"
+                                   on-iron-localstorage-load-empty="_initializeDefaultTolValue">
+                </iron-localstorage>
                 <paper-dropdown-menu>
                     <paper-listbox class="dropdown-content" attr-for-selected="value" selected="{{toleranceUnit}}">
                         <paper-item value="ppm">ppm</paper-item>
                         <paper-item value="Da">Da</paper-item>
                     </paper-listbox>
                 </paper-dropdown-menu>
+                <iron-localstorage name="toleranceUnitCache" value="{{toleranceUnit}}"
+                                   on-iron-localstorage-load-empty="_initializeDefaultTolUnit">
+                </iron-localstorage>
                 <div class="buttonPadding"><paper-button raised class="indigo" on-click="search"><iron-icon icon="search"></iron-icon>search</paper-button></div>
             </div>
-            <paper-header-panel id="glycanFilterPanel" class="blue" mode="standard">
-                <div id="glycanFilterHeader" class="paper-header" on-click="_toggleGlycanFilter">
-                    Filter by glycan composition
-                    <iron-icon id="expandIcon" icon="icons:unfold-more"></iron-icon>
-                    <iron-icon id="foldIcon" icon="icons:unfold-less" disabled></iron-icon>
-                </div>
-            </paper-header-panel>
-            <iron-collapse id="glycanFilterBox" class="horizontal center-justified">
-                <div id="rangeBox" class="layout horizontal wrap">
-                    <div class="singleRangeBox ">
-                        <div class="layout horizontal">
-                            <paper-toggle-button id="HexToggle" checked on-change="_searchAndDisableSlider">Hex : </paper-toggle-button>
-                            <app-localstorage-document key="hexToggle" data="{{hexToggle}}">
-                            </app-localstorage-document>
-                            <span id="HexLabel" class="toggle-span-label">More or equal to 0</span>
-                        </div><br>
-                        <paper-slider id="HexRange" pin snaps max="10" max-markers="10" step="1" value="0" on-change="_searchAndChangeToggleLabel"></paper-slider>
-                    </div>
-                    <div class="singleRangeBox">
-                        <div class="layout horizontal">
-                            <paper-toggle-button id="HexNAcToggle" checked on-change="_searchAndDisableSlider">HexNAc : </paper-toggle-button>
-                            <span id="HexNAcLabel" class="toggle-span-label">More or equal to 0</span>
-                        </div><br>
-                        <paper-slider id="HexNAcRange" pin snaps max="10" max-markers="10" step="1" value="0" on-change="_searchAndChangeToggleLabel"></paper-slider>
-                    </div>
-                    <div class="singleRangeBox">
-                        <div class="layout horizontal">
-                            <paper-toggle-button id="dHexToggle" checked on-change="_searchAndDisableSlider">Deoxyhexose : </paper-toggle-button>
-                            <span id="dHexLabel" class="toggle-span-label">More or equal to 0</span>
-                        </div><br>
-                        <paper-slider id="dHexRange" pin snaps max="10" max-markers="10" step="1" value="0" on-change="_searchAndChangeToggleLabel"></paper-slider>
-                    </div>
-                    <div class="singleRangeBox">
-                        <div class="layout horizontal">
-                            <paper-toggle-button id="NeuAcToggle" checked on-change="_searchAndDisableSlider">NeuAc : </paper-toggle-button>
-                            <span id="NeuAcLabel" class="toggle-span-label">More or equal to 0</span>
-                        </div><br>
-                        <paper-slider id="NeuAcRange" pin snaps max="10" max-markers="10" step="1" value="0" on-change="_searchAndChangeToggleLabel"></paper-slider>
-                    </div>
-                    <div class="singleRangeBox">
-                        <div class="layout horizontal">
-                            <paper-toggle-button id="NeuGcToggle" checked on-change="_searchAndDisableSlider">NeuGc : </paper-toggle-button>
-                            <span id="NeuGcLabel" class="toggle-span-label">More or equal to 0</span>
-                        </div><br>
-                        <paper-slider id="NeuGcRange" pin snaps max="10" max-markers="10" step="1" value="0" on-change="_searchAndChangeToggleLabel"></paper-slider>
-                    </div>
-                    <div class="singleRangeBox">
-                        <div class="layout horizontal">
-                            <paper-toggle-button id="KdnToggle" checked on-change="_searchAndDisableSlider">KDN : </paper-toggle-button>
-                            <span id="KdnLabel" class="toggle-span-label">More or equal to 0</span>
-                        </div><br>
-                        <paper-slider id="KdnRange" pin snaps max="10" max-markers="10" step="1" value="0" on-change="_searchAndChangeToggleLabel"></paper-slider>
-                    </div>
-                    <div class="singleRangeBox">
-                        <div class="layout horizontal">
-                            <paper-toggle-button id="PenToggle" checked on-change="_searchAndDisableSlider">Pentose : </paper-toggle-button>
-                            <span id="PenLabel" class="toggle-span-label">More or equal to 0</span>
-                        </div><br>
-                        <paper-slider id="PenRange" pin snaps max="10" max-markers="10" step="1" value="0" on-change="_searchAndChangeToggleLabel"></paper-slider>
-                    </div>
-                    <div class="singleRangeBox">
-                        <div class="layout horizontal">
-                            <paper-toggle-button id="HexAToggle" checked on-change="_searchAndDisableSlider">HexA : </paper-toggle-button>
-                            <span id="HexALabel" class="toggle-span-label">More or equal to 0</span>
-                        </div><br>
-                        <paper-slider id="HexARange" pin snaps max="10" max-markers="10" step="1" value="0" on-change="_searchAndChangeToggleLabel"></paper-slider>
-                    </div>
-                    <div class="singleRangeBox">
-                        <div class="layout horizontal">
-                            <paper-toggle-button id="SToggle" checked on-change="_searchAndDisableSlider">Sulphate : </paper-toggle-button>
-                            <span id="SLabel" class="toggle-span-label">More or equal to 0</span>
-                        </div><br>
-                        <paper-slider id="SRange" pin snaps max="10" max-markers="10" step="1" value="0" on-change="_searchAndChangeToggleLabel"></paper-slider>
-                    </div>
-                </div>
-
-            </iron-collapse>
          </form>
+        <pepsweetener-glycan-filter filter="{{glycanFilter}}"></pepsweetener-glycan-filter>
         <glycopeptide-multi-result id="sResults"></glycopeptide-multi-result>
     </template>
 
@@ -306,18 +203,17 @@
                     type: String,
                     value: "http://129.194.71.205:9000/search"
                 },
-                masses: String,
+                masses: {
+                    type: String
+                },
                 toleranceUnit: {
-                    type: String,
-                    value: "ppm"
+                    type: String
                 },
                 toleranceValue: {
-                    type: Number,
-                    value: 10
+                    type: Number
                 },
-                errorMessage: {
-                    type: String,
-                    value: "Please check your query"
+                glycanFilter: {
+                    observer: 'search'
                 },
                 _form: {
                     type: Object,
@@ -327,6 +223,7 @@
                 }
             },
             search: function(){
+                console.log('s');
                 if(this.$.masses.validate() && this.$.tolerance.validate()){
                     var chargeStatePattern = /\((\+\d+|\-\d+)\)/g;
                     var queryList = this.masses.split(",");//.filter(Number);
@@ -371,8 +268,7 @@
                         }
                     };
                     for(mass of nonRedundantQueryList){
-                        console.log(JSON.stringify(this._rangeObjectCreator()));
-                        this.$.ajax.body = Util.getQueryString({'mass': mass, 'toleranceUnit': this.toleranceUnit, 'toleranceValue': this.toleranceValue, 'range': JSON.stringify(this._rangeObjectCreator())});
+                        this.$.ajax.body = Util.getQueryString({'mass': mass, 'toleranceUnit': this.toleranceUnit, 'toleranceValue': this.toleranceValue, 'range': JSON.stringify(this.glycanFilter)});
                         this.$.ajax.generateRequest();
                     }
                 }
@@ -381,45 +277,11 @@
                 response = request.detail.response;
                 this.$.sResults.newDataset(response);
             },
-            _searchAndDisableSlider : function (event) {
-                this.search();
-                var monosaccharide  = event.target.id.replace("Toggle","");
-                if(event.target.checked){
-                    this.$$("#"+monosaccharide+"Range").disabled  = false;
-                    this.$$("#"+monosaccharide+"Label").textContent  = "More or equal to "+ this.$$("#"+monosaccharide+"Range").value;
-                } else{
-                    this.$$("#"+monosaccharide+"Range").disabled  = true;
-                    this.$$("#"+monosaccharide+"Label").textContent  = "Not present";
-                }
+            _initializeDefaultTolUnit: function(){
+                this.set('toleranceUnit', 'ppm');
             },
-            _toggleGlycanFilter: function() {
-                this.$.glycanFilterBox.toggle();
-                if(this.$.foldIcon.hasAttribute('disabled')){
-                    this.$.expandIcon.setAttribute('disabled', 'true');
-                    this.$.foldIcon.removeAttribute('disabled');
-                }else{
-                    this.$.foldIcon.setAttribute('disabled', 'true');
-                    this.$.expandIcon.removeAttribute('disabled');
-                }
-
-            },
-            _searchAndChangeToggleLabel: function (event) {
-                this.search();
-                var monosaccharide  = event.target.id.replace("Range","");
-                this.$$("#"+monosaccharide+"Label").textContent  = "More or equal to "+event.target.value;
-            },
-            _rangeObjectCreator: function () {
-                var rangeBox = this.$.rangeBox;
-                var paperInputs = Array.prototype.slice.call(rangeBox.getElementsByTagName('paper-slider'));
-                var ranges = {};
-                paperInputs.forEach(function (item) {
-                    var rangeObject = {};
-                    var monosaccharideId = item.id.replace("Range","");
-                    rangeObject["minRange"] = item.value;
-                    rangeObject["presence"] = Polymer.dom(rangeBox).querySelector("#"+monosaccharideId+"Toggle").checked;
-                    ranges[monosaccharideId] = rangeObject;
-                });
-                return ranges;
+            _initializeDefaultTolValue: function(){
+                this.set('toleranceValue', 10);
             }
         });
     </script>
