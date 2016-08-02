@@ -223,7 +223,6 @@
                 }
             },
             search: function(){
-                console.log('s');
                 if(this.$.masses.validate() && this.$.tolerance.validate()){
                     var chargeStatePattern = /\((\+\d+|\-\d+)\)/g;
                     var queryList = this.masses.split(",");//.filter(Number);
