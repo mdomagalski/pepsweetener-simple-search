@@ -18,7 +18,6 @@
 <link rel="import" href="../paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="../paper-slider/paper-slider.html">
 <link rel="import" href="../pepsweetener-glycan-filter/pepsweetener-glycan-filter.html">
-
 <link rel="import" href="../glycopeptide-multi-result/glycopeptide-multi-result.html">
 
 <!-- Defines element markup -->
@@ -235,7 +234,7 @@
                         } else {
                             queryList[i] = (queryList[i].trim());
                         }
-                    };
+                    }
 
                     var nonRedundantQueryList = queryList.filter(function(item, pos) {
                         return queryList.indexOf(item) == Math.abs(pos);
@@ -266,14 +265,15 @@
                             return queryParts.join('&');
                         }
                     };
-                    for(mass of nonRedundantQueryList){
+                    for(var idx in nonRedundantQueryList){
+                        var mass = nonRedundantQueryList[idx];
                         this.$.ajax.body = Util.getQueryString({'mass': mass, 'toleranceUnit': this.toleranceUnit, 'toleranceValue': this.toleranceValue, 'range': JSON.stringify(this.glycanFilter)});
                         this.$.ajax.generateRequest();
                     }
                 }
             },
             handleResponse: function(request) {
-                response = request.detail.response;
+                var response = request.detail.response;
                 this.$.sResults.newDataset(response);
             },
             _initializeDefaultTolUnit: function(){
