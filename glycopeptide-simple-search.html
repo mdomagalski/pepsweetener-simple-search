@@ -189,7 +189,7 @@
                 <div class="buttonPadding"><paper-button raised class="indigo" on-click="search"><iron-icon icon="search"></iron-icon>search</paper-button></div>
             </div>
          </form>
-        <pepsweetener-glycan-filter filter="{{glycanFilter}}"></pepsweetener-glycan-filter>
+        <pepsweetener-glycan-filter id="glycanFilter" filter="{{glycanFilter}}"></pepsweetener-glycan-filter>
         <glycopeptide-multi-result id="sResults"></glycopeptide-multi-result>
     </template>
 
@@ -212,6 +212,7 @@
                     type: Number
                 },
                 glycanFilter: {
+                    type: Object,
                     observer: 'search'
                 },
                 _form: {
@@ -265,6 +266,7 @@
                             return queryParts.join('&');
                         }
                     };
+                    if(!this.glycanFilter){this.$.glycanFilter._createGlycanFilter();}
                     for(var idx in nonRedundantQueryList){
                         var mass = nonRedundantQueryList[idx];
                         this.$.ajax.body = Util.getQueryString({'mass': mass, 'toleranceUnit': this.toleranceUnit, 'toleranceValue': this.toleranceValue, 'range': JSON.stringify(this.glycanFilter)});
