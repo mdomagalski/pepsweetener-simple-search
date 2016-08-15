@@ -1,7 +1,7 @@
 {
   "name": "pepsweetener-simple-search",
   "version": "1.0",
-  "description": "Simple search of glycopeptide matrix",
+  "description": "Simple search of theoretical glycopeptides",
   "license": "MIT",
   "main": "pepsweetener-simple-search.html",
   "keywords": [

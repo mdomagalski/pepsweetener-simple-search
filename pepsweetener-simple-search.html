@@ -267,6 +267,7 @@
                         }
                     };
                     if(!this.glycanFilter){this.$.glycanFilter._createGlycanFilter();}
+                    this.$.glycanFilter.querySelector("#glycanFilterBox").removeAttribute('opened');
                     for(var idx in nonRedundantQueryList){
                         var mass = nonRedundantQueryList[idx];
                         this.$.ajax.body = Util.getQueryString({'mass': mass, 'toleranceUnit': this.toleranceUnit, 'toleranceValue': this.toleranceValue, 'range': JSON.stringify(this.glycanFilter)});
