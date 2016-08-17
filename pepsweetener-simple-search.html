@@ -148,8 +148,7 @@
     <template>
         <iron-ajax
             id="ajax"
-            method="POST"
-            url="{{url}}"
+            method="GET",
             handle-as="json"
             on-response="handleResponse"
             debounce-duration="300">
@@ -189,7 +188,7 @@
                 <div class="buttonPadding"><paper-button raised class="indigo" on-click="search"><iron-icon icon="search"></iron-icon>search</paper-button></div>
             </div>
          </form>
-        <pepsweetener-glycan-filter id="glycanFilter" filter="{{glycanFilter}}"></pepsweetener-glycan-filter>
+        <pepsweetener-glycan-filter id="glycanFilterElement" filter="{{glycanFilter}}"></pepsweetener-glycan-filter>
         <pepsweetener-multi-result id="sResults"></pepsweetener-multi-result>
     </template>
 
@@ -198,10 +197,6 @@
         Polymer({
             is: 'pepsweetener-simple-search',
             properties: {
-                url: {
-                    type: String,
-                    value: "http://129.194.71.205:9000/search"
-                },
                 masses: {
                     type: String
                 },
@@ -244,40 +239,175 @@
                     multiResultElement.masses = nonRedundantQueryList;
                     multiResultElement.datasets = {};
 
-                    this.ppm = Math.abs(this.ppm);
+                    this.queryMasses = {};
+                    this.queryBuckets = {};
+                    this.sentRequests = {};
+                    this.minMasses = {};
+                    this.maxMasses = {};
+                    this.minBucketMasses = {};
+                    this.maxBucketMasses = {};
+                    this.matchedGlycopeptides = [];
 
-                    var Util = {
-                        getQueryString: function (params) {
-                            var queryParts = [];
-                            var param;
-                            var value;
-
-                            for (param in params) {
-                                value = params[param];
-                                param = window.encodeURIComponent(param);
-
-                                if (value !== null) {
-                                    param += '=' + window.encodeURIComponent(value);
-                                }
-
-                                queryParts.push(param);
-                            }
-
-                            return queryParts.join('&');
-                        }
-                    };
-                    if(!this.glycanFilter){this.$.glycanFilter._createGlycanFilter();}
-                    this.$.glycanFilter.querySelector("#glycanFilterBox").removeAttribute('opened');
+                    if(!this.glycanFilter) this.$.glycanFilterElement._createGlycanFilter();
+                    this.$.glycanFilterElement.querySelector("#glycanFilterBox").removeAttribute('opened');
                     for(var idx in nonRedundantQueryList){
                         var mass = nonRedundantQueryList[idx];
-                        this.$.ajax.body = Util.getQueryString({'mass': mass, 'toleranceUnit': this.toleranceUnit, 'toleranceValue': this.toleranceValue, 'range': JSON.stringify(this.glycanFilter)});
-                        this.$.ajax.generateRequest();
+                        if (this.toleranceUnit=="Da"){
+                            var daTolerance = Number(this.toleranceValue);
+                        }else{
+                            var daTolerance = this._ppmToDalton(mass,this.toleranceValue);
+                        }
+                        //TODO
+                        //ATTENTION! this is very bad and temporary fix, the redis dataset needs to be fixed
+                        var queryMass = Number(mass)+18.0105647;
+
+                        var bucketMass = Math.round( queryMass * 10 );
+                        this.queryMasses[bucketMass] = mass;
+                        this.queryBuckets[bucketMass] = bucketMass;
+                        this.minMasses[bucketMass] = Number(queryMass) - daTolerance;
+                        this.maxMasses[bucketMass] = Number(queryMass) + daTolerance;
+                        this.minBucketMasses[bucketMass] = Math.round( this.minMasses[bucketMass] * 10 );
+                        this.maxBucketMasses[bucketMass] = Math.round( this.maxMasses[bucketMass] * 10 );
+                        this.matchedGlycopeptides[bucketMass]=[];
+                        if (this.minBucketMasses[bucketMass]==this.maxBucketMasses[bucketMass]){
+                            this.$.ajax.url = "http://129.194.71.205:7379/LRANGE/"+bucketMass+"/0/-1";
+                            this.$.ajax.generateRequest();
+                            this.sentRequests[bucketMass] = [bucketMass];
+                        }else{
+                            if(this.minBucketMasses[bucketMass]<bucketMass) this.queryBuckets[this.minBucketMasses[bucketMass]]=bucketMass;
+                            this.$.ajax.url = "http://129.194.71.205:7379/LRANGE/"+this.minBucketMasses[bucketMass]+"/0/-1";
+                            this.$.ajax.generateRequest();
+                            this.sentRequests[bucketMass] = [this.minBucketMasses[bucketMass]];
+                            var minimalBucketMass = this.minBucketMasses[bucketMass];
+                            while (minimalBucketMass+1!=this.maxBucketMasses[bucketMass]){
+                                minimalBucketMass+=1;
+                                this.queryBuckets[minimalBucketMass]=bucketMass;
+                                this.$.ajax.url = "http://129.194.71.205:7379/LRANGE/"+minimalBucketMass+"/0/-1";
+                                this.$.ajax.generateRequest();
+                                this.sentRequests[bucketMass].push(minimalBucketMass);
+                            }
+                            if(this.maxBucketMasses[bucketMass]>bucketMass) this.queryBuckets[this.maxBucketMasses[bucketMass]]=bucketMass;
+                            this.$.ajax.url = "http://129.194.71.205:7379/LRANGE/"+this.maxBucketMasses[bucketMass]+"/0/-1";
+                            this.$.ajax.generateRequest();
+                            this.sentRequests[bucketMass].push(this.minBucketMasses[bucketMass]);
+                        }
                     }
                 }
             },
             handleResponse: function(request) {
+                var bucketMass = request.detail.url.split('/')[4];
                 var response = request.detail.response;
-                this.$.sResults.newDataset(response);
+                var queryMass = this.queryBuckets[bucketMass];
+                this.sentRequests[queryMass].splice(this.sentRequests[queryMass].indexOf(bucketMass));
+                this._parseResponse(response, bucketMass);
+                if (this.sentRequests[queryMass].length==0){
+                    var heatmapDataset = this._generateHeatmapDataset(queryMass);
+                    this.$.sResults.newDataset(heatmapDataset);
+                }
+            },
+            _parseResponse: function(response, bucketMass){
+                var self = this;
+                var queryMass = this.queryBuckets[bucketMass];
+                if(bucketMass==this.minBucketMasses[queryMass] || bucketMass==this.maxBucketMasses[queryMass]){
+                    response["LRANGE"].forEach(function (glycopeptide){
+                        if(self._checkMass(glycopeptide.split(',')[2], self.minMasses[queryMass], self.maxMasses[queryMass])){
+                            self.matchedGlycopeptides[queryMass].push(glycopeptide);
+                        }
+                    });
+                }else{
+                    response["LRANGE"].forEach(function (glycopeptide){
+                        self.matchedGlycopeptides[queryMass].push(glycopeptide);
+                    });
+                }
+            },
+            _generateHeatmapDataset: function(bucketMass){
+                var peptideList = [];
+                var glycanList = [];
+                var glycopeptideMap = [];
+                var queryMass = this.queryBuckets[bucketMass];
+                if(this.matchedGlycopeptides[queryMass].length > 0) {
+                    var peptideCounter = 0;
+                    var glycanCounter = 0;
+                    var self=this;
+                    this.matchedGlycopeptides[queryMass].forEach(function (glycopeptide) {
+                        glycopeptide = glycopeptide.split(',');
+                        var peptide = glycopeptide[0];
+                        if(!self._validateGlycan(glycopeptide[1],self.glycanFilter)){
+                            return;
+                        }
+                        var glycan = glycopeptide[1].replace(":", "\:");
+                        var glycopeptideMass = glycopeptide[2];
+                        var peptideExists = self._contains(peptideList, peptide);
+                        var glycanExists = self._contains(glycanList, glycan);
+                        if(peptideExists!=-1){
+                            peptideIdx = peptideExists;
+                        }else{
+                            peptideCounter = peptideCounter+1;
+                            peptideIdx = peptideCounter;
+                            peptideList.push(peptide);
+                        }
+
+                        if(glycanExists!=-1){
+                            glycanIdx = glycanExists;
+                        }else{
+                            glycanCounter = glycanCounter+1;
+                            glycanIdx = glycanCounter;
+                            glycanList.push(glycan);
+                        }
+                        glycopeptideMap.push({'peptide': peptideIdx, 'glycan': glycanIdx, 'value': self._daltonToPpm(self.queryMasses[queryMass], Math.abs((Number(self.queryMasses[queryMass])+18.0105647)-glycopeptideMass)), 'mass': glycopeptideMass});
+                    })
+                }
+                return({'mass': self.queryMasses[queryMass], 'data': {'peptides': peptideList, 'glycans': glycanList, 'map': glycopeptideMap}});
+            },
+            _validateGlycan: function (glycanString,rangeList) {
+                var glycan = this._createGlycan(glycanString);
+                for(var range in rangeList){
+                    var minRange = Number(rangeList[range].minRange);
+                    var presence = Boolean(rangeList[range].presence);
+                    if(presence){   //Not possible in the range list.
+                        if(minRange > 0 && !glycan.hasOwnProperty(range) ){
+                            return false;
+                        }
+                        if(minRange > 0 && minRange > glycan[range] ){
+                            return false;
+                        }
+                    } else {
+                        if(glycan.hasOwnProperty(range)){
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            },
+            _createGlycan: function (glycanString) {
+                var tokens = glycanString.split("|");
+                var glycan = { };
+                tokens.forEach(function (item) {
+                    var monosaccharide = item.split(":");
+                    glycan[monosaccharide[0]] = monosaccharide[1];
+                });
+                return glycan;
+            },
+            _checkMass: function(mass, min, max){
+                if (min <= mass && mass <= max){
+                    return true;
+                }else{
+                    return false;
+                }
+            },
+            _contains: function(a, obj){
+                for (var i = 0; i < a.length; i++) {
+                    if (a[i] === obj) {
+                        return i+1;
+                    }
+                }
+                return -1;
+            },
+            _ppmToDalton: function(mass, ppm){
+                return (mass*ppm)/1000000;
+            },
+            _daltonToPpm: function(mass, da){
+                return (da*1000000)/mass;
             },
             _initializeDefaultTolUnit: function(){
                 this.set('toleranceUnit', 'ppm');
