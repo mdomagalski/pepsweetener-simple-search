@@ -327,10 +327,10 @@
                 var glycanList = [];
                 var glycopeptideMap = [];
                 var queryMass = this.queryBuckets[bucketMass];
+                var self=this;
                 if(this.matchedGlycopeptides[queryMass].length > 0) {
                     var peptideCounter = 0;
                     var glycanCounter = 0;
-                    var self=this;
                     this.matchedGlycopeptides[queryMass].forEach(function (glycopeptide) {
                         glycopeptide = glycopeptide.split(',');
                         var peptide = glycopeptide[0];
