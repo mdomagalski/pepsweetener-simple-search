@@ -264,25 +264,25 @@
                             this.queryBuckets[bucketMass] = bucketMass;
                             this.minMasses[bucketMass] = Number(queryMass) - daTolerance;
                             this.maxMasses[bucketMass] = Number(queryMass) + daTolerance;
-                            this.minBucketMasses[bucketMass] = Math.round( this.minMasses[bucketMass] * 10 );
-                            this.maxBucketMasses[bucketMass] = Math.round( this.maxMasses[bucketMass] * 10 );
+                            this.minBucketMasses[bucketMass] = Math.floor(this.minMasses[bucketMass]*10);
+                            this.maxBucketMasses[bucketMass] = Math.ceil(this.maxMasses[bucketMass]*10);
                             this.matchedGlycopeptides[bucketMass]=[];
                             if (this.minBucketMasses[bucketMass]==this.maxBucketMasses[bucketMass]){
                                 this.$.ajax.url = "http://129.194.71.205:8080/LRANGE/"+bucketMass+"/0/-1";
-                                this.$.ajax.generateRequest();
                                 this.sentRequests[bucketMass] = [bucketMass];
+                                this.$.ajax.generateRequest();
                             }else{
                                 if(this.minBucketMasses[bucketMass]<bucketMass) this.queryBuckets[this.minBucketMasses[bucketMass]]=bucketMass;
                                 this.$.ajax.url = "http://129.194.71.205:8080/LRANGE/"+this.minBucketMasses[bucketMass]+"/0/-1";
-                                this.$.ajax.generateRequest();
                                 this.sentRequests[bucketMass] = [this.minBucketMasses[bucketMass]];
-                                var minimalBucketMass = this.minBucketMasses[bucketMass];
-                                while (minimalBucketMass+1!=this.maxBucketMasses[bucketMass]){
-                                    minimalBucketMass+=1;
+                                this.$.ajax.generateRequest();
+                                var minimalBucketMass = this.minBucketMasses[bucketMass]+1;
+                                while (minimalBucketMass!=this.maxBucketMasses[bucketMass]){
                                     this.queryBuckets[minimalBucketMass]=bucketMass;
                                     this.$.ajax.url = "http://129.194.71.205:8080/LRANGE/"+minimalBucketMass+"/0/-1";
-                                    this.$.ajax.generateRequest();
                                     this.sentRequests[bucketMass].push(minimalBucketMass);
+                                    this.$.ajax.generateRequest();
+                                    minimalBucketMass+=1;
                                 }
                                 if(this.maxBucketMasses[bucketMass]>bucketMass) this.queryBuckets[this.maxBucketMasses[bucketMass]]=bucketMass;
                                 this.$.ajax.url = "http://129.194.71.205:8080/LRANGE/"+this.maxBucketMasses[bucketMass]+"/0/-1";
