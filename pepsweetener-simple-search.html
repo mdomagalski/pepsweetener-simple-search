@@ -310,17 +310,17 @@
                 var nonRedundantBucket = response["LRANGE"].filter(function(item, pos) {
                     return response["LRANGE"].indexOf(item) == pos;
                 });
-                if(bucketMass==this.minBucketMasses[queryMass] || bucketMass==this.maxBucketMasses[queryMass]){
+                //if(bucketMass==this.minBucketMasses[queryMass] || bucketMass==this.maxBucketMasses[queryMass]){
                     nonRedundantBucket.forEach(function (glycopeptide){
                         if(self._checkMass(glycopeptide.split(',')[2], self.minMasses[queryMass], self.maxMasses[queryMass])){
                             self.matchedGlycopeptides[queryMass].push(glycopeptide);
                         }
                     });
-                }else{
+                /*}else{
                     nonRedundantBucket.forEach(function (glycopeptide){
                         self.matchedGlycopeptides[queryMass].push(glycopeptide);
                     });
-                }
+                }*/
             },
             _generateHeatmapDataset: function(bucketMass){
                 var peptideList = [];
