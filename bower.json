@@ -30,7 +30,8 @@
     "paper-item": "PolymerElements/paper-item#^1.2.1",
     "paper-listbox": "PolymerElements/paper-listbox#^1.1.2",
     "pepsweetener-multi-result": "https://mdomagalski@bitbucket.org/sib-pig/pepsweetener-multi-result.git",
-    "pepsweetener-glycan-filter": "https://mdomagalski@bitbucket.org/sib-pig/pepsweetener-glycan-filter.git"
+    "pepsweetener-glycan-filter": "https://mdomagalski@bitbucket.org/sib-pig/pepsweetener-glycan-filter.git",
+    "simple-search-tutorial": "https://mdomagalski@bitbucket.org/sib-pig/simple-search-tutorial.git"
   },
   "resolutions": {
     "polymer": "^1.5.0",

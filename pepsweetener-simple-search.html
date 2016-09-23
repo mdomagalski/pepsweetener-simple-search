@@ -1,3 +1,4 @@
+
 <!-- Imports polymer -->
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../iron-ajax/iron-ajax.html">
@@ -19,6 +20,7 @@
 <link rel="import" href="../paper-slider/paper-slider.html">
 <link rel="import" href="../pepsweetener-glycan-filter/pepsweetener-glycan-filter.html">
 <link rel="import" href="../pepsweetener-multi-result/pepsweetener-multi-result.html">
+<link rel="import" href="../simple-search-tutorial/simple-search-tutorial.html">
 
 <!-- Defines element markup -->
 <dom-module id="pepsweetener-simple-search">
@@ -186,6 +188,7 @@
                 <div class="buttonPadding"><paper-button raised class="indigo" on-click="search"><iron-icon icon="search"></iron-icon>search</paper-button></div>
             </div>
          </form>
+        <simple-search-tutorial></simple-search-tutorial>
         <pepsweetener-glycan-filter id="glycanFilterElement" filter="{{glycanFilter}}"></pepsweetener-glycan-filter>
         <pepsweetener-multi-result id="sResults"></pepsweetener-multi-result>
     </template>
