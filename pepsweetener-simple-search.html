@@ -29,33 +29,33 @@
         :root {
             height: 100%;
 
-            --paper-input-container-input: {
-                border-radius: 3px;
-                font-size: 18px;
-                line-height: 32px;
+        --paper-input-container-input: {
+             border-radius: 3px;
+             font-size: 18px;
+             line-height: 32px;
 
-            };
+         };
 
-            --paper-input-container-label:{
-                padding-bottom: 10px;
-                padding-left: 5px;
-                font-size: 18px;
-                line-height: 32px;
-            };
+        --paper-input-container-label:{
+             padding-bottom: 10px;
+             padding-left: 5px;
+             font-size: 18px;
+             line-height: 32px;
+         };
 
-            --paper-input-error:{
-                line-height: 32px;
-                font-size: 18px;
-            };
+        --paper-input-error:{
+             line-height: 32px;
+             font-size: 18px;
+         };
 
-            /* Label and underline color when the input is focused */
-            --paper-input-container-focus-color: blue;
+        /* Label and underline color when the input is focused */
+        --paper-input-container-focus-color: blue;
 
-            /* Label and underline color when the input is invalid */
-            --paper-input-container-invalid-color: red;
+        /* Label and underline color when the input is invalid */
+        --paper-input-container-invalid-color: red;
 
-            /* Input foreground color */
-            --paper-input-container-input-color: black;
+        /* Input foreground color */
+        --paper-input-container-input-color: black;
         }
 
         paper-header-panel {
@@ -79,10 +79,10 @@
             font-family: "Roboto";
             background-color: var(--paper-indigo-500);
             color: white;
-            --paper-button-raised-keyboard-focus: {
-                background-color: var(--paper-indigo-a300) !important;
-                color: white !important;
-            };
+        --paper-button-raised-keyboard-focus: {
+             background-color: var(--paper-indigo-a300) !important;
+             color: white !important;
+         };
         }
 
         iron-icon[disabled]{
@@ -187,7 +187,7 @@
                 </iron-localstorage>
                 <div class="buttonPadding"><paper-button raised class="indigo" on-click="search"><iron-icon icon="search"></iron-icon>search</paper-button></div>
             </div>
-         </form>
+        </form>
         <simple-search-tutorial></simple-search-tutorial>
         <pepsweetener-glycan-filter id="glycanFilterElement" filter="{{glycanFilter}}"></pepsweetener-glycan-filter>
         <pepsweetener-multi-result id="sResults"></pepsweetener-multi-result>
@@ -198,6 +198,10 @@
         Polymer({
             is: 'pepsweetener-simple-search',
             properties: {
+                apiUrl: {
+                    type: String,
+                    value: 'http://129.194.71.205'
+                },
                 masses: {
                     type: String
                 },
@@ -271,24 +275,24 @@
                             this.maxBucketMasses[bucketMass] = Math.ceil(this.maxMasses[bucketMass]*10);
                             this.matchedGlycopeptides[bucketMass]=[];
                             if (this.minBucketMasses[bucketMass]==this.maxBucketMasses[bucketMass]){
-                                this.$.ajax.url = "http://129.194.71.205/LRANGE/"+bucketMass+"/0/-1";
+                                this.$.ajax.url = this.apiUrl+"/LRANGE/"+bucketMass+"/0/-1?jsonp";
                                 this.sentRequests[bucketMass] = [bucketMass];
                                 this.$.ajax.generateRequest();
                             }else{
                                 if(this.minBucketMasses[bucketMass]<bucketMass) this.queryBuckets[this.minBucketMasses[bucketMass]]=bucketMass;
-                                this.$.ajax.url = "http://129.194.71.205/LRANGE/"+this.minBucketMasses[bucketMass]+"/0/-1";
+                                this.$.ajax.url = this.apiUrl+"/LRANGE/"+this.minBucketMasses[bucketMass]+"/0/-1?jsonp";
                                 this.sentRequests[bucketMass] = [this.minBucketMasses[bucketMass]];
                                 this.$.ajax.generateRequest();
                                 var minimalBucketMass = this.minBucketMasses[bucketMass]+1;
                                 while (minimalBucketMass!=this.maxBucketMasses[bucketMass]){
                                     this.queryBuckets[minimalBucketMass]=bucketMass;
-                                    this.$.ajax.url = "http://129.194.71.205/LRANGE/"+minimalBucketMass+"/0/-1";
+                                    this.$.ajax.url = this.apiUrl+"/LRANGE/"+minimalBucketMass+"/0/-1?jsonp";
                                     this.sentRequests[bucketMass].push(minimalBucketMass);
                                     this.$.ajax.generateRequest();
                                     minimalBucketMass+=1;
                                 }
                                 if(this.maxBucketMasses[bucketMass]>bucketMass) this.queryBuckets[this.maxBucketMasses[bucketMass]]=bucketMass;
-                                this.$.ajax.url = "http://129.194.71.205/LRANGE/"+this.maxBucketMasses[bucketMass]+"/0/-1";
+                                this.$.ajax.url = this.apiUrl+"/LRANGE/"+this.maxBucketMasses[bucketMass]+"/0/-1?jsonp";
                                 this.$.ajax.generateRequest();
                                 this.sentRequests[bucketMass].push(this.maxBucketMasses[bucketMass]);
                             }
@@ -314,16 +318,16 @@
                     return response["LRANGE"].indexOf(item) == pos;
                 });
                 //if(bucketMass==this.minBucketMasses[queryMass] || bucketMass==this.maxBucketMasses[queryMass]){
-                    nonRedundantBucket.forEach(function (glycopeptide){
-                        if(self._checkMass(glycopeptide.split(',')[2], self.minMasses[queryMass], self.maxMasses[queryMass])){
-                            self.matchedGlycopeptides[queryMass].push(glycopeptide);
-                        }
-                    });
-                /*}else{
-                    nonRedundantBucket.forEach(function (glycopeptide){
+                nonRedundantBucket.forEach(function (glycopeptide){
+                    if(self._checkMass(glycopeptide.split(',')[2], self.minMasses[queryMass], self.maxMasses[queryMass])){
                         self.matchedGlycopeptides[queryMass].push(glycopeptide);
-                    });
-                }*/
+                    }
+                });
+                /*}else{
+                 nonRedundantBucket.forEach(function (glycopeptide){
+                 self.matchedGlycopeptides[queryMass].push(glycopeptide);
+                 });
+                 }*/
             },
             _generateHeatmapDataset: function(bucketMass){
                 var peptideList = [];
