@@ -275,24 +275,24 @@
                             this.maxBucketMasses[bucketMass] = Math.ceil(this.maxMasses[bucketMass]*10);
                             this.matchedGlycopeptides[bucketMass]=[];
                             if (this.minBucketMasses[bucketMass]==this.maxBucketMasses[bucketMass]){
-                                this.$.ajax.url = this.apiUrl+"/LRANGE/"+bucketMass+"/0/-1";
+                                this.$.ajax.url = new String(this.apiUrl+"/LRANGE/"+minimalBucketMass+"/0/-1").replace(/\/\/LRANGE/g, "/LRANGE");
                                 this.sentRequests[bucketMass] = [bucketMass];
                                 this.$.ajax.generateRequest();
                             }else{
                                 if(this.minBucketMasses[bucketMass]<bucketMass) this.queryBuckets[this.minBucketMasses[bucketMass]]=bucketMass;
-                                this.$.ajax.url = this.apiUrl+"/LRANGE/"+this.minBucketMasses[bucketMass]+"/0/-1";
+                                this.$.ajax.url = new String(this.apiUrl+"/LRANGE/"+this.minBucketMasses[bucketMass]+"/0/-1").replace(/\/\/LRANGE/g, "/LRANGE");
                                 this.sentRequests[bucketMass] = [this.minBucketMasses[bucketMass]];
                                 this.$.ajax.generateRequest();
                                 var minimalBucketMass = this.minBucketMasses[bucketMass]+1;
                                 while (minimalBucketMass!=this.maxBucketMasses[bucketMass]){
                                     this.queryBuckets[minimalBucketMass]=bucketMass;
-                                    this.$.ajax.url = this.apiUrl+"/LRANGE/"+minimalBucketMass+"/0/-1";
+                                    this.$.ajax.url = new String(this.apiUrl+"/LRANGE/"+minimalBucketMass+"/0/-1").replace(/\/\/LRANGE/g, "/LRANGE");
                                     this.sentRequests[bucketMass].push(minimalBucketMass);
                                     this.$.ajax.generateRequest();
                                     minimalBucketMass+=1;
                                 }
                                 if(this.maxBucketMasses[bucketMass]>bucketMass) this.queryBuckets[this.maxBucketMasses[bucketMass]]=bucketMass;
-                                this.$.ajax.url = this.apiUrl+"/LRANGE/"+this.maxBucketMasses[bucketMass]+"/0/-1";
+                                this.$.ajax.url = new String(this.apiUrl+"/LRANGE/"+minimalBucketMass+"/0/-1").replace(/\/\/LRANGE/g, "/LRANGE");
                                 this.$.ajax.generateRequest();
                                 this.sentRequests[bucketMass].push(this.maxBucketMasses[bucketMass]);
                             }
@@ -301,7 +301,8 @@
                 }
             },
             handleResponse: function(request) {
-                var bucketMass = request.detail.url.split('/')[4];
+                var bucketMass = request.detail.url.split('LRANGE/')[1];
+                bucketMass = bucketMass.split('/')[0];
                 var response = request.detail.response;
                 var queryMass = this.queryBuckets[bucketMass];
                 this.sentRequests[queryMass].splice(this.sentRequests[queryMass].indexOf(bucketMass));
