@@ -21,6 +21,7 @@
 <link rel="import" href="../pepsweetener-glycan-filter/pepsweetener-glycan-filter.html">
 <link rel="import" href="../pepsweetener-multi-result/pepsweetener-multi-result.html">
 <link rel="import" href="../simple-search-tutorial/simple-search-tutorial.html">
+<link rel="import" href="../paper-spinner/paper-spinner.html">
 
 <!-- Defines element markup -->
 <dom-module id="pepsweetener-simple-search">
@@ -56,6 +57,8 @@
 
         /* Input foreground color */
         --paper-input-container-input-color: black;
+
+        --paper-spinner-stroke-width: 3px;
         }
 
         paper-header-panel {
@@ -83,6 +86,12 @@
              background-color: var(--paper-indigo-a300) !important;
              color: white !important;
          };
+        }
+
+        paper-spinner {
+            top: 8px;
+            height: 40px;
+            width: 40px;
         }
 
         iron-icon[disabled]{
@@ -185,7 +194,10 @@
                 <iron-localstorage name="toleranceUnitCache" value="{{toleranceUnit}}"
                                    on-iron-localstorage-load-empty="_initializeDefaultTolUnit">
                 </iron-localstorage>
-                <div class="buttonPadding"><paper-button raised class="indigo" on-click="search"><iron-icon icon="search"></iron-icon>search</paper-button></div>
+                <div class="buttonPadding">
+                    <paper-button raised class="indigo" on-click="search"><iron-icon icon="search"></iron-icon>search</paper-button>
+                    <paper-spinner id="spinner"></paper-spinner>
+                </div>
             </div>
         </form>
         <simple-search-tutorial></simple-search-tutorial>
@@ -225,6 +237,7 @@
             search: function(){
                 if (!this.masses=='') {
                     if(this.$.masses.validate() && this.$.tolerance.validate()){
+                        this.$.spinner.active=true;
                         var chargeStatePattern = /\((\+\d+|\-\d+)\)/g;
                         var queryList = this.masses.split(",");//.filter(Number);
                         for(var i=0; i<queryList.length; i++){
@@ -364,6 +377,7 @@
                         glycopeptideMap.push({'peptide': peptideIdx, 'glycan': glycanIdx, 'value': self._daltonToPpm(self.queryMasses[queryMass], Math.abs((Number(self.queryMasses[queryMass]))-glycopeptideMass)), 'mass': glycopeptideMass});
                     })
                 }
+                this.$.spinner.active=false;
                 return({'mass': self.queryMasses[queryMass], 'data': {'peptides': peptideList, 'glycans': glycanList, 'map': glycopeptideMap}});
             },
             _validateGlycan: function (glycanString,rangeList) {
