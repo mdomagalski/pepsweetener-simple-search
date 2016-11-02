@@ -200,7 +200,7 @@
             properties: {
                 apiUrl: {
                     type: String,
-                    value: 'http://glycoproteome.expasy.org/api/database/'
+                    value: 'http://born.isb-sib.ch//api/database/'
                 },
                 masses: {
                     type: String
@@ -262,10 +262,6 @@
                             }else{
                                 var daTolerance = this._ppmToDalton(mass,this.toleranceValue);
                             }
-                            //TODO
-                            //ATTENTION! this is very bad and temporary fix, the redis dataset needs to be fixed
-                            var queryMass = Number(mass)+18.0105647;
-
                             var bucketMass = Math.round( queryMass * 10 );
                             this.queryMasses[bucketMass] = mass;
                             this.queryBuckets[bucketMass] = bucketMass;
@@ -275,24 +271,24 @@
                             this.maxBucketMasses[bucketMass] = Math.ceil(this.maxMasses[bucketMass]*10);
                             this.matchedGlycopeptides[bucketMass]=[];
                             if (this.minBucketMasses[bucketMass]==this.maxBucketMasses[bucketMass]){
-                                this.$.ajax.url = new String(this.apiUrl+"/LRANGE/"+minimalBucketMass+"/0/-1").replace(/\/\/LRANGE/g, "/LRANGE");
+                                this.$.ajax.url = new String(this.apiUrl+"/QRANGE/"+minimalBucketMass+"/0/-1").replace(/\/\/QRANGE/g, "/QRANGE");
                                 this.sentRequests[bucketMass] = [bucketMass];
                                 this.$.ajax.generateRequest();
                             }else{
                                 if(this.minBucketMasses[bucketMass]<bucketMass) this.queryBuckets[this.minBucketMasses[bucketMass]]=bucketMass;
-                                this.$.ajax.url = new String(this.apiUrl+"/LRANGE/"+this.minBucketMasses[bucketMass]+"/0/-1").replace(/\/\/LRANGE/g, "/LRANGE");
+                                this.$.ajax.url = new String(this.apiUrl+"/QRANGE/"+this.minBucketMasses[bucketMass]+"/0/-1").replace(/\/\/QRANGE/g, "/QRANGE");
                                 this.sentRequests[bucketMass] = [this.minBucketMasses[bucketMass]];
                                 this.$.ajax.generateRequest();
                                 var minimalBucketMass = this.minBucketMasses[bucketMass]+1;
                                 while (minimalBucketMass!=this.maxBucketMasses[bucketMass]){
                                     this.queryBuckets[minimalBucketMass]=bucketMass;
-                                    this.$.ajax.url = new String(this.apiUrl+"/LRANGE/"+minimalBucketMass+"/0/-1").replace(/\/\/LRANGE/g, "/LRANGE");
+                                    this.$.ajax.url = new String(this.apiUrl+"/QRANGE/"+minimalBucketMass+"/0/-1").replace(/\/\/QRANGE/g, "/QRANGE");
                                     this.sentRequests[bucketMass].push(minimalBucketMass);
                                     this.$.ajax.generateRequest();
                                     minimalBucketMass+=1;
                                 }
                                 if(this.maxBucketMasses[bucketMass]>bucketMass) this.queryBuckets[this.maxBucketMasses[bucketMass]]=bucketMass;
-                                this.$.ajax.url = new String(this.apiUrl+"/LRANGE/"+minimalBucketMass+"/0/-1").replace(/\/\/LRANGE/g, "/LRANGE");
+                                this.$.ajax.url = new String(this.apiUrl+"/QRANGE/"+minimalBucketMass+"/0/-1").replace(/\/\/QRANGE/g, "/QRANGE");
                                 this.$.ajax.generateRequest();
                                 this.sentRequests[bucketMass].push(this.maxBucketMasses[bucketMass]);
                             }
@@ -301,7 +297,7 @@
                 }
             },
             handleResponse: function(request) {
-                var bucketMass = request.detail.url.split('LRANGE/')[1];
+                var bucketMass = request.detail.url.split('QRANGE/')[1];
                 bucketMass = bucketMass.split('/')[0];
                 var response = request.detail.response;
                 var queryMass = this.queryBuckets[bucketMass];
@@ -315,8 +311,8 @@
             _parseResponse: function(response, bucketMass){
                 var self = this;
                 var queryMass = this.queryBuckets[bucketMass];
-                var nonRedundantBucket = response["LRANGE"].filter(function(item, pos) {
-                    return response["LRANGE"].indexOf(item) == pos;
+                var nonRedundantBucket = response["QRANGE"].filter(function(item, pos) {
+                    return response["QRANGE"].indexOf(item) == pos;
                 });
                 //if(bucketMass==this.minBucketMasses[queryMass] || bucketMass==this.maxBucketMasses[queryMass]){
                 nonRedundantBucket.forEach(function (glycopeptide){
@@ -364,7 +360,7 @@
                             glycanIdx = glycanCounter;
                             glycanList.push(glycan);
                         }
-                        glycopeptideMap.push({'peptide': peptideIdx, 'glycan': glycanIdx, 'value': self._daltonToPpm(self.queryMasses[queryMass], Math.abs((Number(self.queryMasses[queryMass])+18.0105647)-glycopeptideMass)), 'mass': glycopeptideMass});
+                        glycopeptideMap.push({'peptide': peptideIdx, 'glycan': glycanIdx, 'value': self._daltonToPpm(self.queryMasses[queryMass], Math.abs((Number(self.queryMasses[queryMass]))-glycopeptideMass)), 'mass': glycopeptideMass});
                     })
                 }
                 return({'mass': self.queryMasses[queryMass], 'data': {'peptides': peptideList, 'glycans': glycanList, 'map': glycopeptideMap}});
