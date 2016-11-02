@@ -262,6 +262,7 @@
                             }else{
                                 var daTolerance = this._ppmToDalton(mass,this.toleranceValue);
                             }
+                            var queryMass = Number(mass);
                             var bucketMass = Math.round( queryMass * 10 );
                             this.queryMasses[bucketMass] = mass;
                             this.queryBuckets[bucketMass] = bucketMass;
