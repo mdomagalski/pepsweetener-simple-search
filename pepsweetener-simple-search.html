@@ -180,6 +180,7 @@
                              label="tolerance" value="{{toleranceValue}}"
                              required
                              error-message="Numeric values only!" class="short">
+                             <!--pattern="\d{1,4}(\.\d+){0,1}" auto-validate-->
                 </paper-input>
                 <iron-localstorage name="toleranceValueCache" value="{{toleranceValue}}"
                                    on-iron-localstorage-load-empty="_initializeDefaultTolValue">
