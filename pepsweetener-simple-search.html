@@ -114,10 +114,10 @@
         }
         .short {
             margin-right: 0px;
-            width: 60px;
+            width: 100px;
         }
         .long {
-            width: 60%;
+            width: 55%;
         }
         .toggle-span-label {
             position: relative;
@@ -147,7 +147,7 @@
         }
 
         #masses{
-            min-width: 200px;
+            min-width: 180px;
         }
 
         .buttonPadding{
@@ -178,9 +178,9 @@
                 </paper-input>
                 <paper-input id="tolerance" name="tolerance"
                              label="tolerance" value="{{toleranceValue}}"
-                             pattern="\d{1,4}(\.\d+){0,1}"
-                             required auto-validate
+                             required
                              error-message="Numeric values only!" class="short">
+                             <!--pattern="\d{1,4}(\.\d+){0,1}" auto-validate-->
                 </paper-input>
                 <iron-localstorage name="toleranceValueCache" value="{{toleranceValue}}"
                                    on-iron-localstorage-load-empty="_initializeDefaultTolValue">
@@ -223,6 +223,13 @@
                 toleranceValue: {
                     type: Number
                 },
+                maxTolerance: {
+                    type: Object,
+                    value: {
+                        ppm: 100,
+                        da: 0.1
+                    }
+                },
                 glycanFilter: {
                     type: Object
                 },
@@ -235,10 +242,11 @@
             },
             search: function(){
                 if (!this.masses=='') {
-                    if(this.$.masses.validate() && this.$.tolerance.validate()){
+                    if(this.$.masses.validate() && this._validateTolerance()){
                         this.$.spinner.active=true;
                         var chargeStatePattern = /\((\+\d+|\-\d+)\)/g;
                         var queryList = this.masses.split(",");//.filter(Number);
+                        var labelList = queryList;
                         for(var i=0; i<queryList.length; i++){
                             var chargeState = queryList[i].match(chargeStatePattern);
                             if (chargeState){
@@ -253,8 +261,14 @@
                         var nonRedundantQueryList = queryList.filter(function(item, pos) {
                             return queryList.indexOf(item) == Math.abs(pos);
                         });
+                        var nonRedundantLabelList = labelList.filter(function(item, pos) {
+                            return queryList.indexOf(item) == Math.abs(pos);
+                        });
                         var multiResultElement = Polymer.dom(this.root).querySelector('#sResults');
-                        multiResultElement.masses = nonRedundantQueryList;
+                        if (nonRedundantLabelList.length==nonRedundantQueryList.length)
+                            multiResultElement.masses = nonRedundantLabelList;
+                        else
+                            multiResultElement.masses = nonRedundantQueryList;
                         multiResultElement.datasets = {};
 
                         this.queryMasses = {};
@@ -407,6 +421,18 @@
                     glycan[monosaccharide[0]] = monosaccharide[1];
                 });
                 return glycan;
+            },
+            _validateTolerance: function(){
+                if (this.toleranceUnit==="ppm" && this.toleranceValue>this.maxTolerance.ppm) {
+                    this.$.tolerance.invalid=true;
+                    var errorMessage="Max: "+this.maxTolerance.ppm;
+                } else if (this.toleranceUnit==="Da" && this.toleranceValue>this.maxTolerance.da) {
+                    this.$.tolerance.invalid=true;
+                    var errorMessage = "Max: "+this.maxTolerance.da;
+                } else {
+                    this.$.tolerance.invalid=false;
+                }
+                if(errorMessage) this.$.tolerance.errorMessage = errorMessage;
             },
             _checkMass: function(mass, min, max){
                 if (min <= mass && mass <= max){
